@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+
+  "name": "Quasar RedShift",
+  "description": "Quasar é um conjunto de ferramentas para Tribal Wars",
+  "version": "1.0",
+
+  "permissions": [
+    "declarativeContent",
+    "tabs"
+  ],
+  "background": {
+    "scripts": ["js/background.js", "js/core.min.js"],
+    "persistent": true
+  },
+  "page_action": {
+    "default_icon": "images/icon38.png",
+    "default_title": "Quasar RedShift está sendo executado!"
+  }
+}
