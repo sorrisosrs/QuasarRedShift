@@ -42,7 +42,7 @@ interface Plugable{
 interface Paintable{
     /**
      * Representação em jQuery para o objeto
-     * @propriety {jQuery} $element
+     * @property {jQuery} $element
      */
     $element : jQuery;
 
@@ -63,13 +63,128 @@ interface Paintable{
 
 /* CLASSES DE UTILITARIOS */
 /**
+ * Manipulação da memoria cache do navegador
+ * @class Storage
+ */
+class Storage{
+
+    private isNotUserData : boolean = false;
+
+    /**
+     * @param {boolean} isNotUserData são configurações
+     */
+    constructor( isNotUserData : boolean ){
+        this.isNotUserData = isNotUserData == null ? false : true;
+    }
+
+    /**
+     * Retorna um valor que esta na cache do navegador
+     * @param {String} key Chave de acesso
+     * @param def Valor padrão
+     * @returns {any} result
+     */
+    public get( key : string, def : any) : any{
+        if( this.isNotUserData ){
+            return this.getData(key, def);
+        }
+        else {
+            return this.getUserData( key, def );
+        }
+    }
+
+    /**
+     * Define um chave na cache do navegador
+     * @param {String} key Chave de acesso
+     * @param value Valor
+     */
+    public set( key : string, value : any ){
+        if( this.isNotUserData ){
+            this.setData(key, value)
+        }
+        else {
+            this.setUserData( key, value );
+        }
+    }
+
+    /**
+     * Recebe dados em uma chave especifica do jogador atual
+     * @param {String} key Chave de acesso
+     * @param {any} def Valor padrão
+     */
+    public getUserData(key : string, def : any) : any{
+        var json = this.getUserJSON();
+        var result = json[ key ];
+        if( typeof result == "undefined" ){
+            return typeof def == "undefined" ? null : def ;
+        }
+        return result;
+    }
+
+    /**
+     * Define o valor de alguma chave no JSON local do usuario conectado
+     * @param {String} key Chave de acesso
+     * @param value Valor
+     */
+    public setUserData(key : String, value : any){
+        var user = game_data.player.name;
+
+        var json = this.getUserJSON();
+        json[ key ] = value;
+        this.setData( user, json);
+    }
+
+    /**
+     * Retorna o JSON referente a cache local do usuario conectado
+     * @returns {JSON} json
+     */
+    public getUserJSON() : JSON{
+        var user = game_data.player.name;
+        return JSON.parse( this.getData( user, {} ) );
+    }
+
+    /**
+     * Recebe dados direto da cache do navegador
+     * @param {String} key Chave de acesso
+     * @param def Valor padrão
+     * @returns {any} result
+     */
+    public getData( key : string, def : any ) : any{
+
+        if( typeof def == "undefined" ){
+            def = null;
+        }
+
+        var result = localStorage.getItem(name);
+
+        if( typeof result == "undefined" ){
+            return def;
+        }
+
+        return result;
+    }
+
+    /**
+     * Salva dados diretamente na cache do navegador
+     * @param {String} key Chave de acesso
+     * @param {any} valor
+     */
+    public setData( key : String, value : any ){
+        if( typeof value == "undefined" ){
+            value == null;
+        }
+        localStorage.setItem(key, value);
+    }
+}
+
+
+/**
  * Manipulação de html
  * @Class HTMLHelper
  */
 class HTMLHelper{
     /**
      * Armazena a resepentação de texto do codigo html
-     * @propriety {String} html
+     * @property {String} html
      */
     private html: String = '';
 
@@ -135,11 +250,17 @@ class PluginMenuItem extends MenuItem{
 
     /**
      * Nome que será mostrado para o plugin
-     * @proprity {String} name
+     * @property {String} name
      */
     private name : String;
 
-    constructor( name : String ){
+    /**
+     * Representação do plugin em questão
+     * @property {SimplePlugin} plugin
+     */
+    private plugin : SimplePlugin;
+
+    constructor( name : String, plugin : SimplePlugin ){
         if( name == null){
             this.nam = "no_named";
         }
@@ -157,7 +278,42 @@ class PluginMenuItem extends MenuItem{
         superElement.addClass('plugin-item');
         superElement.append( this.name );
 
+        if( this.plugin.isEnable() ){
+            superElement.addClass('enabled');
+        }
+
+        superElement.on('click', this.onClick );
+
         this.$element = superElement;
+        return this.$element;
+    }
+
+    /**
+     * Vinculado ao onClick do elemento de menu
+     */
+    public onClick(){
+        this.plugin.toogle();
+        if( this.plugin.isEnable() ){
+            this.getElement().addClass('enabled');
+        }
+        else {
+            this.getElement().removeClass('enabled');
+        }
+    }
+}
+
+/**
+ * Apenas uma classe simbolica
+ * @class PluginEmptyMenuItem
+ */
+class PluginEmptyMenuItem extends PluginMenuItem{
+
+    /**
+     * Sobrescreve o methodo de PluginMenuItem
+     * @param $parentElement
+     */
+    public paint( $parentElement : jQuery) : jQuery {
+        this.$element = new HTMLHelper().getElement();
         return this.$element;
     }
 }
@@ -190,52 +346,106 @@ class Menu implements Paintable{
     }
 }
 
+/**
+ * Super Classe para plugins, define as principais funções de um plugin, seus valores e ações padroes.
+ * @class SimplePlugin
+ */
 class SimplePlugin implements Plugable{
+    /**
+     * Nome do plugin, que será exibido no menu e nos logs.
+     * @property {String} name
+     */
     private name : String;
+
+    /**
+     * A representação do body da pagina em jQuery
+     * @property {jQuery} $body
+     */
     private $body : jQuery;
+
+    /**
+     * Instancia do item de menu desse plugin
+     * Caso o plugin não precise de um item no menu, configure-o com PluginEmptyMenuItem;
+     * @property {PluginMenuItem} menuItem
+     */
     private menuItem : PluginMenuItem;
 
     constructor( name : String ){
         this.name = name;
-        this.menuItem = new PluginMenuItem( name );
+        this.menuItem = new PluginMenuItem( name, this );
     }
 
+    /**
+     * Retorna o item de menu desse plugin
+     * @returns {PluginMenuItem} menuItem
+     */
     public getMenuItem() : PluginMenuItem{
         return this.menuItem;
     }
 
+    /**
+     * Retorna o nome desse plugin
+     * @returns {String} name
+     */
     public getName() : String{
         return this.name;
     }
 
+    /**
+     * Define o elemento B
+     * @param $body
+     */
     public setBody( $body : jQuery){
         this.$body = $body;
     }
 
+    /**
+     * Retorna o a representação do body em jQuery
+     * @returns {jQuery} $body
+     */
     public getBody(){
         return this.$body;
     }
 
-    /* SOBRESCREVA OS METODOS ABAIXO */
+    /**
+     * Inverte o status de ativação do plugin
+     */
+    public toogle(){
+        this.setEnable( ! this.isEnable() );
+    }
 
-    //Injeta HTML na pagina
+    /**
+     * Altera o status de ativação do plugin
+     * @param {boolean} enable
+     */
+    public setEnable( enable : boolean){
+        var storage = new Storage();
+        storage.set(this.getName() + "_enable", enable);
+    }
+
+    /**
+     * Retorna o status de ativação do plugin
+     * @returns {boolean} status
+     */
+    public isEnable() : boolean{
+        var storage = new Storage();
+        return storage.get( this.getName() + "_enable", false);
+    }
+
+    /** Metodos padroes para Plugins */
     public postExecute() : void{
         console.log( this.getName() + " injetou nada na pagina.");
     }
 
-    //Pre executa o plugin
     public preExecute():void {
         console.log( this.getName() + " foi carregado com sucesso.");
     }
 
-    //Checa se o plugin pode ser executado
     public check( url : String ):boolean {
         return false;
     }
 
-    //Executa o plugin... Inicializa
     public execute():void {
-        //Mensagem de exução padão.
         console.log( this.getName() + " está sendo executado.");
     }
 
@@ -243,16 +453,30 @@ class SimplePlugin implements Plugable{
 
 /** CONTROLADORES */
 
-//Controlador de Plugins
+/**
+ * Controlador de Plugins
+ * @class PluginController
+ */
 class PluginController{
+    /**
+     * Lista de plugins
+     * @property plugins
+     */
     private plugins : Array<SimplePlugin>;
 
-    //Adiciona um plugin a lista de plugins do controlador
+    /**
+     * Adiciona um plugin a lista de plugins
+     * @param {SimplePlugin} plugin
+     */
     public addPlugin(plugin : SimplePlugin ) : void{
         this.plugins.push( plugin )
     }
 
-    //Desenha todos os plugins dentro do Menu e injeta seus
+    /**
+     * Coloca todos os plugins dentro do menu
+     * E renderiza o menu
+     * @param menu
+     */
     public paint( menu : Menu ){
         for( var i in this.plugins ) {
             var thatPlugin = this.plugins[i];
@@ -261,21 +485,29 @@ class PluginController{
         menu.paint();
     }
 
-    //executa todos os plugins
+    /**
+     * Roda todos os scripts na respectiva ordem
+     * - plugin.preExecute
+     * - plugin.check
+     *  - plugin.execute
+     * - plugin.postExecute
+     * @param url
+     * @param $body
+     */
     public run( url : String, $body : jQuery ) : void{
         for( var i in this.plugins ){
             var thatPlugin = this.plugins[i];
-            thatPlugin.setBody( $body );
-            //Pre executa o plugin
-            thatPlugin.preExecute();
-            //Realiza a checagem do plugin
-            if( thatPlugin.check( url ) ){
-                //Dispacha o Execute do plugin de forma asincronizada.
-                setTimeout(function(){
+            //Cria função asincronica para realizar operações
+            setTimeout( function() {
+                thatPlugin.setBody($body);
+
+                thatPlugin.preExecute();
+
+                if (thatPlugin.check(url)) {
                     thatPlugin.execute();
-                }, 10);
-            }
-            thatPlugin.postExecute();
+                }
+                thatPlugin.postExecute();
+            }, 15);
         }
     }
 }

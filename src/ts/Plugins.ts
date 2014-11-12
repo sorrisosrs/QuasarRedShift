@@ -3175,17 +3175,4 @@ class AntiCaptcha extends SimplePlugin{
     constructor(){
         super("Captcha");
     }
-
-    public preExecute():void {
-
-    }
-
-    public check( url : String ):boolean {
-        return undefined;
-    }
-
-    public execute():void {
-
-    }
-
 }
