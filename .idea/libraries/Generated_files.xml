@@ -2,9 +2,11 @@
   <library name="Generated files" type="javaScript">
     <properties>
       <sourceFilesUrls>
-        <item url="file://$PROJECT_DIR$/src/ts/Models.js" />
-        <item url="file://$PROJECT_DIR$/src/ts/Plugins.js" />
-        <item url="file://$PROJECT_DIR$/src/ts/Core.js" />
+        <item url="file://$PROJECT_DIR$/js/Models.js" />
+        <item url="file://$PROJECT_DIR$/js/Core.js" />
+        <item url="file://$PROJECT_DIR$/js/Interfaces.js" />
+        <item url="file://$PROJECT_DIR$/js/Plugins.js" />
+        <item url="file://$PROJECT_DIR$/js/Utils.js" />
       </sourceFilesUrls>
     </properties>
     <CLASSES>
@@ -15,6 +17,18 @@
       <root url="file://$PROJECT_DIR$/src/ts/Models.js" />
       <root url="file://$PROJECT_DIR$/src/ts/Plugins.js" />
       <root url="file://$PROJECT_DIR$/src/ts/Core.js" />
+      <root url="file://$PROJECT_DIR$/src/ts/Utils.js" />
+      <root url="file://$PROJECT_DIR$/src/ts/Interfaces.js" />
+      <root url="file://$PROJECT_DIR$/src/ts/Models.js" />
+      <root url="file://$PROJECT_DIR$/src/ts/Plugins.js" />
+      <root url="file://$PROJECT_DIR$/src/ts/Utils.js" />
+      <root url="file://$PROJECT_DIR$/src/ts/Core.js" />
+      <root url="file://$PROJECT_DIR$/src/ts/Interfaces.js" />
+      <root url="file://$PROJECT_DIR$/js/Models.js" />
+      <root url="file://$PROJECT_DIR$/js/Core.js" />
+      <root url="file://$PROJECT_DIR$/js/Interfaces.js" />
+      <root url="file://$PROJECT_DIR$/js/Plugins.js" />
+      <root url="file://$PROJECT_DIR$/js/Utils.js" />
     </CLASSES>
     <SOURCES />
   </library>

@@ -10,11 +10,28 @@
     "tabs"
   ],
   "background": {
-    "scripts": ["js/background.js", "js/core.min.js"],
+    "scripts": ["js/background.js"],
     "persistent": true
   },
+  "icons": {
+    "16": "images/icon16.png",
+    "32": "images/icon32.png",
+    "64": "images/icon64.png",
+    "128": "images/icon128.png"
+  },
   "page_action": {
-    "default_icon": "images/icon38.png",
+    "default_icon": {
+      "19": "images/icon16.png",
+      "38": "images/icon32.png"
+    },
     "default_title": "Quasar RedShift está sendo executado!"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.tribalwars.com.br/game*"],
+      "css": ["css/quasar_redshift.css"],
+      "js": ["js/jquery.min.js", "js/Utils.js", "js/Models.js", "js/Core.js"],
+      "run_at" : "document_end"
+    }
+  ]
 }
